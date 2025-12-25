@@ -10,8 +10,7 @@ pipeline {
   }
 
   environment {
-    TF_DIR     = 'terraform'
-    AWS_REGION = 'ap-south-1'
+    TF_DIR = 'terraform'
   }
 
   stages {
@@ -24,8 +23,7 @@ pipeline {
 
     stage('Terraform Init') {
       steps {
-        dir("${TF_DIR}") {
-          sh 'terraform --version'
+        dir(TF_DIR) {
           sh 'terraform init'
         }
       }
@@ -33,17 +31,16 @@ pipeline {
 
     stage('Terraform Plan') {
       steps {
-        dir("${TF_DIR}") {
+        dir(TF_DIR) {
           sh 'terraform plan'
         }
       }
     }
 
     stage('Approval') {
+      agent none   // 🔥 CRITICAL FIX
       when {
-        not {
-          expression { params.AUTO_APPROVE }
-        }
+        not { expression { params.AUTO_APPROVE } }
       }
       steps {
         input message: 'Apply Terraform changes?'
@@ -52,19 +49,10 @@ pipeline {
 
     stage('Terraform Apply') {
       steps {
-        dir("${TF_DIR}") {
-          sh 'terraform apply ${AUTO_APPROVE ? "-auto-approve" : ""}'
+        dir(TF_DIR) {
+          sh 'terraform apply -auto-approve'
         }
       }
-    }
-  }
-
-  post {
-    success {
-      echo 'Terraform pipeline completed successfully.'
-    }
-    failure {
-      echo 'Terraform pipeline failed.'
     }
   }
 }
