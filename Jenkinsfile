@@ -3,9 +3,9 @@ pipeline {
 
   parameters {
     booleanParam(
-      name: 'AUTO_APPROVE',
+      name: 'APPLY',
       defaultValue: false,
-      description: 'Run terraform apply with -auto-approve'
+      description: 'Set to TRUE to apply Terraform'
     )
   }
 
@@ -37,17 +37,10 @@ pipeline {
       }
     }
 
-    stage('Approval') {
-      agent none   // 🔥 CRITICAL FIX
-      when {
-        not { expression { params.AUTO_APPROVE } }
-      }
-      steps {
-        input message: 'Apply Terraform changes?'
-      }
-    }
-
     stage('Terraform Apply') {
+      when {
+        expression { params.APPLY }
+      }
       steps {
         dir(TF_DIR) {
           sh 'terraform apply -auto-approve'
