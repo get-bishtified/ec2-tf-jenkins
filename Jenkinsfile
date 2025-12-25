@@ -4,7 +4,7 @@ pipeline {
   parameters {
     booleanParam(
       name: 'APPLY',
-      defaultValue: false,
+      defaultValue: true,
       description: 'Set to TRUE to apply Terraform'
     )
   }
