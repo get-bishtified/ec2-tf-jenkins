@@ -5,7 +5,7 @@ pipeline {
   }
   parameters {
     booleanParam(name: 'AUTO_APPROVE', defaultValue: false, description: 'If true, terraform apply runs with -auto-approve')
-    string(name: 'AWS_REGION', defaultValue: 'us-east-1', description: 'AWS region to create resources in')
+    string(name: 'AWS_REGION', defaultValue: 'ap-south-1', description: 'AWS region to create resources in')
   }
   stages {
     stage('Checkout') {
