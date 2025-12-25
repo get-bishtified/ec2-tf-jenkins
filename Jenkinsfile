@@ -1,78 +1,70 @@
 pipeline {
-  agent { label 'master' }
-  environment {
-    TF_DIR = 'terraform'
-  }
+  agent any
+
   parameters {
-    booleanParam(name: 'AUTO_APPROVE', defaultValue: false, description: 'If true, terraform apply runs with -auto-approve')
-    string(name: 'AWS_REGION', defaultValue: 'ap-south-1', description: 'AWS region to create resources in')
+    booleanParam(
+      name: 'AUTO_APPROVE',
+      defaultValue: false,
+      description: 'Run terraform apply with -auto-approve'
+    )
   }
+
+  environment {
+    TF_DIR     = 'terraform'
+    AWS_REGION = 'ap-south-1'
+  }
+
   stages {
+
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        checkout scm
+      }
     }
 
-    stage('Terraform Init & Validate') {
+    stage('Terraform Init') {
       steps {
-        dir(env.TF_DIR) {
-          withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-            sh 'terraform --version'
-            sh 'terraform init -input=false'
-            sh 'terraform fmt -diff -write=true'
-            sh 'terraform validate || true'
-          }
+        dir("${TF_DIR}") {
+          sh 'terraform --version'
+          sh 'terraform init'
         }
       }
     }
 
     stage('Terraform Plan') {
       steps {
-        dir(env.TF_DIR) {
-          withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-            sh 'terraform plan -out=tfplan -input=false -var "aws_region=${params.AWS_REGION}"'
-            sh 'terraform show -json tfplan > plan.json || true'
-            archiveArtifacts artifacts: 'terraform/plan.json', allowEmptyArchive: true
-          }
+        dir("${TF_DIR}") {
+          sh 'terraform plan'
         }
       }
     }
 
     stage('Approval') {
-      when { expression { return !params.AUTO_APPROVE } }
+      when {
+        not {
+          expression { params.AUTO_APPROVE }
+        }
+      }
       steps {
-        input message: 'Apply Terraform changes to AWS?', ok: 'Apply'
+        input message: 'Apply Terraform changes?'
       }
     }
 
     stage('Terraform Apply') {
       steps {
-        dir(env.TF_DIR) {
-          withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-            script {
-              if (params.AUTO_APPROVE) {
-                sh 'terraform apply -input=false -auto-approve tfplan'
-              } else {
-                sh 'terraform apply -input=false tfplan'
-              }
-            }
-          }
-        }
-      }
-    }
-
-    stage('Outputs') {
-      steps {
-        dir(env.TF_DIR) {
-          sh 'terraform output -json > outputs.json || true'
-          archiveArtifacts artifacts: 'terraform/outputs.json', allowEmptyArchive: true
+        dir("${TF_DIR}") {
+          sh 'terraform apply ${AUTO_APPROVE ? "-auto-approve" : ""}'
         }
       }
     }
   }
 
   post {
-    always {
-      echo 'Terraform pipeline completed.'
+    success {
+      echo 'Terraform pipeline completed successfully.'
+    }
+    failure {
+      echo 'Terraform pipeline failed.'
     }
   }
-} 
+}
