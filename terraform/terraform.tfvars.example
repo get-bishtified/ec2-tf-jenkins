@@ -1,0 +1,5 @@
+# Copy to terraform.tfvars and update values for your account
+aws_region = "ap-south-1"
+ami = "ami-0b823aa03ebf22c93"
+instance_type = "t2.micro"
+key_name = "shankaz"
