@@ -55,4 +55,20 @@ terraform apply tfplan
 - Running Terraform on the Jenkins controller (master) and having the controller manage infrastructure is a deliberate choice with security implications — consider using a dedicated, isolated agent instead.
 - Use an AWS IAM user with the minimum required privileges, and prefer remote state backends with locking.
 
+---
 
+## 🎥 Learn With YouTube Tutorials
+
+Each project is **explained step-by-step** on YouTube with visuals and walkthroughs:
+
+🔗 [📺 Bishtify - Build Skills, Not Just Resumes](https://www.youtube.com/@getbishtified) 
+🧠 Subscribe for weekly ML + CloudOps demos.
+
+---
+
+📩 **Contact:**  
+📧 `support@bishtify.com`
+
+🤝 Connect With Me - 📧 [Click here](https://topmate.io/pradeep_singh_bisht)
+🔗 Get Bishtified with:
+Bishtify - Let’s build skills — not just resumes! 🚀
